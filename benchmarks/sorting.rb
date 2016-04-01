@@ -3,36 +3,44 @@ $:.unshift File.expand_path("../../lib", __FILE__)
 require 'benchmark'
 require 'daru'
 
-vector = Daru::Vector.new(10000.times.map.to_a.shuffle)
-df = Daru::DataFrame.new({
-  a: vector,
-  b: vector,
-  c: vector
-})
-Benchmark.bm do |x|
-  x.report("Sort a Vector without any args") do
-    vector.sort
-  end
+# Make reports easier to read
+# Do a comparison of converting to row array, sorting, and converting back
 
-  x.report("Sort vector in descending order with custom <=> operator") do
-    vector.sort(ascending: false) { |a,b| a.to_s <=> b.to_s }
-  end
+base_n = 10000
+0.upto(10) do |iscale|
+  n = base_n * 10**iscale
 
-  x.report("Sort single column of DataFrame") do
-    df.sort([:a])
-  end
+  vector = Daru::Vector.new(n.times.map.to_a.shuffle)
+  df = Daru::DataFrame.new({
+    a: vector,
+    b: vector,
+    c: vector
+  })
+  Benchmark.bm do |x|
+#    x.report("n = #{n} Sort a Vector without any args") do
+#      vector.sort
+#    end
 
-  x.report("Sort two columns of DataFrame") do
-    df.sort([:c,:a])
-  end
+#    x.report("n = #{n} - Sort vector in descending order with custom <=> operator") do
+#      vector.sort(ascending: false) { |a,b| a.to_s <=> b.to_s }
+#    end
 
-  x.report("Sort two columns with custom operators in different orders of DataFrame") do
-    df.sort([:c,:a], ascending: [true, false], 
-      by: { c: lambda { |a| a.to_s },
-            a: lambda { |a| a+1 } })
+#    x.report("n = #{n} - Sort single column of DataFrame") do
+#      df.sort([:a])
+#    end
+
+    x.report("n = #{n} - Sort two columns of DataFrame") do
+      df.sort([:c,:a])
+    end
+
+#    x.report("n = #{n} - Sort two columns with custom operators in different orders of DataFrame") do
+#      df.sort([:c,:a], ascending: [true, false],
+#        by: { c: lambda { |a| a.to_s },
+#              a: lambda { |a| a+1 } })
+#    end
+
   end
 end
-
 # FIXME: MASSIVE SPEEDUP NECESSARY!
 
 #                                         ===== Benchamarks =====
